@@ -2,7 +2,6 @@
 """Lab 1 TET - por Santiago Vanegas"""
 
 import argparse
-import base64
 import re
 import socket
 import sys
@@ -40,7 +39,6 @@ class Request:
             f'Host: {self.domain}\r\n' \
             f'User-Agent: yacurl(svaneg11)\r\n' \
             f'Accept: */*\r\n' \
-            f'Accept-Encoding: identity\r\n'\
             f'Accept-Language: en-US\r\n' \
             f'Connection: keep-alive\r\n\r\n'
 
@@ -87,9 +85,9 @@ def separate_response(response):
             if (content_type == 'text/html'):
                 soup = BeautifulSoup(body, "html.parser")
                 body = soup.prettify()
-    return http_headers, body, content_type
+            return http_headers, body, content_type
 
-def save_file(body, filename, content_type):
+def save_file(response_bytes, body, filename, content_type):
     print(content_type , len(content_type))
     if content_type == 'text/html':
         if '.html' not in filename:
@@ -100,31 +98,46 @@ def save_file(body, filename, content_type):
     if content_type == 'image/jpeg':
         if '.jpg' not in filename and'.jpeg' not in filename:
             filename += '.jpg'
+    if content_type == 'image/gif':
+        if '.gif' not in filename:
+            filename += '.gif'
+    if content_type == 'image/jpeg' or content_type == 'image/gif':
+        sep = b''
+        count = 0
+        while sep != b'\r\n\r\n':   # find binary body
+            sep = response_bytes[count:count + 4]
+            print(sep, count)
+            count += 1
+        count += 3
+        print(response_bytes[count:])
+        img = open(filename, mode='wb')
+        img.write(response_bytes[count:])
+
 
 def send_request(url, port, filename):
     request = Request(url)
-    print(repr(request))
+    #print(repr(request))
     HOST, http_request = request.get()
-    PORT = 80      # The port used by the server
+    PORT = port      # The port used by the server
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
         s.settimeout(1)
         s.sendall(http_request)
-        response = b''
+        response_bytes = b''
         try:
             while True:
                 data = s.recv(1024)
                 if data == b'':
                     break
-                response += data
+                response_bytes += data
         except Exception:
             pass
-        print(response)
+        print(response_bytes)
         s.close()
-        response = response.decode('ISO-8859-1').encode('utf-8').decode('utf-8')
+        response = response_bytes.decode('ISO-8859-1').encode('utf-8').decode('utf-8')
         http_headers, body, content_type = separate_response(response)
         print(http_headers, body, sep='\n\n')
-        save_file(body, filename, content_type)
+        save_file(response_bytes, body, filename, content_type)
         sys.exit(0)
 
 
