@@ -36,15 +36,16 @@ class Request:
             print('Failed to find server IP.')
             sys.exit(1)
 
-        self.request = f'{self.method} {self.subdirectory} HTTP/1.1\n' \
-            f'Host: {self.domain}\n' \
-            f'User-Agent: yacurl(svaneg11)\n' \
-            f'Accept: */*\n' \
-            f'Accept-Language: en-US\n' \
-            f'Connection: keep-alive\n\n'
+        self.request = f'{self.method} {self.subdirectory} HTTP/1.1\r\n' \
+            f'Host: {self.domain}\r\n' \
+            f'User-Agent: yacurl(svaneg11)\r\n' \
+            f'Accept: */*\r\n' \
+            f'Accept-Encoding: identity\r\n'\
+            f'Accept-Language: en-US\r\n' \
+            f'Connection: keep-alive\r\n\r\n'
 
-        self.request = bytes(self.request, encoding="ascii")
-        explain_request(self.method, self.subdirectory, self.domain)
+        self.request = bytes(self.request, encoding="'ISO-8859-1'")
+        #explain_request(self.method, self.subdirectory, self.domain)
 
     def __repr__(self):
         return f"HttpRequest({self.method}, {self.domain}, {self.subdirectory}). ServerIP: {self.host} ,\n"\
@@ -102,9 +103,9 @@ def save_file(body, filename, content_type):
 
 def send_request(url, port, filename):
     request = Request(url)
+    print(repr(request))
     HOST, http_request = request.get()
-
-    PORT = port      # The port used by the server
+    PORT = 80      # The port used by the server
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
         s.settimeout(1)
@@ -113,14 +114,18 @@ def send_request(url, port, filename):
         try:
             while True:
                 data = s.recv(1024)
+                if data == b'':
+                    break
                 response += data
         except Exception:
-            s.close()
-            response = response.decode('ISO-8859-1').encode('utf-8').decode('utf-8')
-            http_headers, body, content_type = separate_response(response)
-            print(http_headers, body, sep='\n\n')
-            save_file(body, filename, content_type)
-            sys.exit(0)
+            pass
+        print(response)
+        s.close()
+        response = response.decode('ISO-8859-1').encode('utf-8').decode('utf-8')
+        http_headers, body, content_type = separate_response(response)
+        print(http_headers, body, sep='\n\n')
+        save_file(body, filename, content_type)
+        sys.exit(0)
 
 
 parser = argparse.ArgumentParser(description='HTTP requests using sockets')
