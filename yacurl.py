@@ -94,9 +94,6 @@ def explain_response(response_headers):
     print('')
 
 
-
-
-
 def separate_response(response):
     response = response.replace('\r', '')   # remove windows carriage return from response
     match = re.search('(.+?\n\n)(.*)', response, flags=re.DOTALL)   # retrieve the http headers and the body
@@ -112,10 +109,11 @@ def separate_response(response):
         if match:
             content_type = match.group(1)
 
-            if (content_type == 'text/html'):
+            if content_type == 'text/html':
                 soup = BeautifulSoup(body, "html.parser")
                 body = soup.prettify()
             return http_headers, body, content_type
+
 
 def save_file(response_bytes, body, filename, content_type):
     if content_type == 'text/html':
@@ -147,10 +145,9 @@ def save_file(response_bytes, body, filename, content_type):
 
 def send_request(url, port, filename):
     request = Request(url)
-    HOST, http_request = request.get()
-    PORT = port      # The port used by the server
+    host, http_request = request.get()
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
+        s.connect((host, port))
         s.settimeout(1)
         s.sendall(http_request)
         response_bytes = b''
@@ -162,6 +159,7 @@ def send_request(url, port, filename):
                 response_bytes += data
         except Exception:
             pass
+
         s.close()
         response = response_bytes.decode('ISO-8859-1').encode('utf-8').decode('utf-8')
         tup = separate_response(response)
@@ -171,7 +169,9 @@ def send_request(url, port, filename):
             http_headers = response
             body = None
             content_type = None
+
         explain_response(http_headers)
+
         if content_type == 'text/html':
             print('Body:', body, sep='\n')
             soup = BeautifulSoup(body, "html.parser")
@@ -181,14 +181,13 @@ def send_request(url, port, filename):
                 if image_tag['src'] not in links:
                     links.append(image_tag['src'])
 
-            print('Recursos Estáticos:')
+            print('Recursos estáticos:')
             for l in links:
                 if l.startswith('/'):
-                    print('http://',request.domain, l, sep='')
+                    print('http://', request.domain, l, sep='')
                 else:
                     print(l)
         save_file(response_bytes, body, filename, content_type)
-        sys.exit(0)
 
 
 parser = argparse.ArgumentParser(description='HTTP requests using sockets')
