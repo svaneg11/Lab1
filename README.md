@@ -6,7 +6,7 @@ Antes de poder correr el programa se deben instalar los requerimientos.
 
 Desde la terminal se debe ir a la carpeta del proyecto y correr
 
-`pip install -r requirements.txt`
+> `pip install -r requirements.txt`
 
 Esto instalará BeautifulSoup4
 
