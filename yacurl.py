@@ -126,9 +126,10 @@ def save_file(response_bytes, body, filename, content_type):
         if '.jpg' not in filename and '.jpeg' not in filename:
             filename += '.jpg'
     else:
-        extension = '.' + content_type[content_type.index('/')+1:]
-        if extension not in filename:
-            filename += extension
+        if content_type != 'application/binary':
+            extension = '.' + content_type[content_type.index('/')+1:]
+            if extension not in filename:
+                filename += extension
 
     if content_type is not None and content_type != 'text/html':
         sep = b''
