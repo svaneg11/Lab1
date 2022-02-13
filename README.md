@@ -2,7 +2,9 @@
 por Santiago Vanegas / svaneg11@eafit.edu.co
 
 ## Pre-requisitos
-Antes de poder correr el programa se deben instalar los requerimientos.
+Programa escrito usando python 3.7.
+
+Antes de poder correr el programa se deben instalar las dependencias.
 
 Desde la terminal se debe ir a la carpeta del proyecto y correr
 
