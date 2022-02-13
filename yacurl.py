@@ -130,7 +130,7 @@ def save_file(response_bytes, body, filename, content_type):
         if extension not in filename:
             filename += extension
 
-    if content_type != 'text/html':
+    if content_type is not None and content_type != 'text/html':
         sep = b''
         count = 0
         while sep != b'\r\n\r\n':   # find binary body
@@ -139,7 +139,7 @@ def save_file(response_bytes, body, filename, content_type):
         count += 3
         print('Body:')
         print(response_bytes[count:])
-        img = open(filename, mode='wb', encoding='utf-8')
+        img = open(filename, mode='wb')
         img.write(response_bytes[count:])
 
 
